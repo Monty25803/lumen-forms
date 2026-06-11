@@ -11,7 +11,7 @@ A lightweight Google Forms–like application built with Django. Create forms, c
   - Multiple choice (checkbox)
   - Dropdown
 - **Fill out forms** with a clean, neon-styled interface
-- **View responses** in a simple table view
+- **View responses** in a staff-only table view
 - **No authentication required** for form submission (ideal for surveys and feedback)
 
 ## Requirements
@@ -55,7 +55,7 @@ A lightweight Google Forms–like application built with Django. Create forms, c
 2. Create a **Form** with a title and optional description.
 3. Add **Questions** to the form (with **Options** for radio/checkbox/dropdown types).
 4. Visit the home page to see your forms and share links for others to fill out.
-5. Use **View responses** to see submitted answers.
+5. Log in as a staff user to use **View responses** and see submitted answers.
 
 ## Project Structure
 
