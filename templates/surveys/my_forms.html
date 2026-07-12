@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}My forms — {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="responses-header">
+    <h2 class="section-title">My forms</h2>
+    <a href="{% url 'form_create' %}" class="btn-lumen">Create form</a>
+  </div>
+
+  {% if forms %}
+    {% for form in forms %}
+    <article class="lumen-card">
+      <span class="status-pill status-{{ form.status }}">{{ form.get_status_display }}</span>
+      <h3 class="form-title">{{ form.title }}</h3>
+      {% if form.description %}<p class="form-description">{{ form.description }}</p>{% endif %}
+      {% if form.closes_at %}<p class="muted">Closes {{ form.closes_at|date:"M d, Y H:i" }}</p>{% endif %}
+      {% if form.google_sheet_url %}
+      <p class="muted"><a href="{{ form.google_sheet_url }}" target="_blank" rel="noopener">Open Google Sheet</a></p>
+      {% endif %}
+      <div class="action-row">
+        <a href="{% url 'form_manage' form.public_id %}" class="btn-lumen">Manage</a>
+        <a href="{% url 'form_detail' form.public_id %}" class="btn-lumen btn-secondary">Fill link</a>
+        <a href="{% url 'form_responses' form.public_id %}" class="btn-lumen btn-ghost">Responses</a>
+        <form method="post" action="{% url 'form_duplicate' form.public_id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn-lumen btn-ghost">Duplicate</button>
+        </form>
+      </div>
+    </article>
+    {% endfor %}
+  {% else %}
+  <div class="lumen-card empty-state">
+    <p class="muted">You have not created any forms yet.</p>
+    <a href="{% url 'form_create' %}" class="btn-lumen">Create your first form</a>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

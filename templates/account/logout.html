@@ -1,0 +1,21 @@
+{% extends "allauth/layouts/base.html" %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Sign out" %}{% endblock %}
+
+{% block content %}
+<article class="lumen-card auth-card">
+  <h1 class="auth-title">Sign out</h1>
+  <p class="muted auth-lead">Are you sure you want to sign out of Lumen?</p>
+  <form method="post" action="{% url 'account_logout' %}">
+    {% csrf_token %}
+    {% if redirect_field_value %}
+    <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+    {% endif %}
+    <div class="action-row auth-actions">
+      <button type="submit" class="btn-lumen btn-submit">Sign out</button>
+      <a href="{% url 'home' %}" class="btn-lumen btn-ghost">Cancel</a>
+    </div>
+  </form>
+</article>
+{% endblock %}

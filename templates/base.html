@@ -3,23 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}Neon's Form{% endblock %}</title>
+  <title>{% block title %}{{ site_name }}{% endblock %}</title>
   {% load static %}
-  <link rel="stylesheet" href="{% static 'css/neon.css' %}">
+  <link rel="stylesheet" href="{% static 'css/lumen.css' %}">
 </head>
 <body>
+  <div class="page-bg" aria-hidden="true"></div>
   <div class="container">
-    <header class="neon-header">
-      <h1>Neon's Form</h1>
-      <p style="color: var(--text-muted); font-size: 0.9rem;">Create & collect responses</p>
+    <header class="lumen-header">
+      <a href="{% url 'home' %}" class="brand">{{ site_name }}</a>
+      <p class="tagline">{{ site_tagline }}</p>
+      <nav class="top-nav">
+        {% if user.is_authenticated %}
+          <a href="{% url 'my_forms' %}">My forms</a>
+          <a href="{% url 'form_create' %}">Create form</a>
+          <a href="{% url 'account_logout' %}">Sign out</a>
+        {% endif %}
+      </nav>
     </header>
+
+    {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+      <li class="message message-{{ message.tags }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
 
     <main>
       {% block content %}{% endblock %}
     </main>
 
-    <footer class="admin-link">
+    <footer class="site-footer">
+      {% if user.is_staff %}
       <a href="{% url 'admin:index' %}">Admin</a>
+      {% endif %}
     </footer>
   </div>
 </body>

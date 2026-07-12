@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}Thank you — {{ site_name }}{% endblock %}
+
+{% block content %}
+<article class="lumen-card thanks-card">
+  <h2 class="thanks-title">Response recorded</h2>
+  <p class="muted">Thank you for submitting your response to “{{ form_model.title }}”.</p>
+  <a href="{% url 'home' %}" class="btn-lumen">Back to forms</a>
+</article>
+{% endblock %}

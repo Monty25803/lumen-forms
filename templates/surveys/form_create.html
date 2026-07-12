@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Create form — {{ site_name }}{% endblock %}
+
+{% block content %}
+<article class="lumen-card">
+  <h2 class="form-title">Create a form</h2>
+  <p class="muted">Pick a starter template or begin blank. You can edit everything after.</p>
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="form-question">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {% if field.help_text %}<p class="muted">{{ field.help_text }}</p>{% endif %}
+      {% if field.errors %}<ul class="errorlist">{% for error in field.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+      {{ field }}
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn-lumen btn-submit">Continue</button>
+  </form>
+</article>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit question — {{ site_name }}{% endblock %}
+
+{% block content %}
+<article class="lumen-card">
+  <h2 class="form-title">Edit question</h2>
+  <p class="muted">Form: {{ form_model.title }}</p>
+  <form method="post" id="add-question-form">
+    {% csrf_token %}
+    <div class="form-question">
+      <label for="{{ question_form.text.id_for_label }}">{{ question_form.text.label }}</label>
+      {{ question_form.text.errors }}
+      {{ question_form.text }}
+    </div>
+    <div class="form-question">
+      <label for="{{ question_form.question_type.id_for_label }}">{{ question_form.question_type.label }}</label>
+      {{ question_form.question_type.errors }}
+      {{ question_form.question_type }}
+    </div>
+    <div class="form-question">
+      <label class="checkbox-inline">
+        {{ question_form.required }}
+        <span>Required</span>
+      </label>
+    </div>
+    <div class="form-question options-builder" id="options-builder" hidden>
+      <label>Options</label>
+      <p class="muted">Each choice gets its own field.</p>
+      {% if question_form.non_field_errors %}
+      <ul class="errorlist">{% for error in question_form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>
+      {% endif %}
+      <div id="options-list" class="options-list">
+        {% for value in question_form.option_values %}
+        <div class="option-row">
+          <input type="text" name="options" class="lumen-input" value="{{ value }}" placeholder="Option {{ forloop.counter }}" autocomplete="off">
+          <button type="button" class="btn-lumen btn-ghost btn-remove-option">Remove</button>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="button" class="btn-lumen btn-secondary" id="add-option-btn">Add option</button>
+    </div>
+    <div class="action-row">
+      <button type="submit" class="btn-lumen btn-submit">Save question</button>
+      <a href="{% url 'form_manage' form_model.public_id %}" class="btn-lumen btn-ghost">Cancel</a>
+    </div>
+  </form>
+</article>
+
+<template id="option-row-template">
+  <div class="option-row">
+    <input type="text" name="options" class="lumen-input" value="" placeholder="Option" autocomplete="off">
+    <button type="button" class="btn-lumen btn-ghost btn-remove-option">Remove</button>
+  </div>
+</template>
+<script src="{% static 'js/options-builder.js' %}"></script>
+{% endblock %}

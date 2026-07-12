@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Responses — {{ form_model.title }}{% endblock %}
+
+{% block content %}
+<article class="lumen-card lumen-card-wide">
+  <div class="responses-header">
+    <div>
+      <h2 class="form-title">{{ form_model.title }}</h2>
+      <p class="muted">{{ total_responses }} response(s)</p>
+      {% if form_model.google_sheet_url %}
+      <p class="muted"><a href="{{ form_model.google_sheet_url }}" target="_blank" rel="noopener">Open Google Sheet</a></p>
+      {% endif %}
+    </div>
+    <div class="action-row">
+      {% if pending_sync %}
+      <form method="post" action="{% url 'form_retry_sync' form_model.public_id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn-lumen btn-secondary">Retry sheet sync ({{ pending_sync }})</button>
+      </form>
+      {% endif %}
+      <a href="{% url 'form_responses_export' form_model.public_id %}" class="btn-lumen btn-secondary">Export CSV</a>
+      <a href="{% url 'form_detail' form_model.public_id %}" class="btn-lumen">Fill form</a>
+      <a href="{% url 'form_manage' form_model.public_id %}" class="btn-lumen btn-ghost">Manage</a>
+    </div>
+  </div>
+
+  {% if charts %}
+  <section class="charts-section">
+    <h3 class="section-title">Choice summary</h3>
+    {% for chart in charts %}
+    <div class="chart-card">
+      <h4 class="chart-title">{{ chart.question.text }}</h4>
+      {% if chart.total %}
+        {% for row in chart.rows %}
+        <div class="chart-row">
+          <div class="chart-label">{{ row.label }} <span class="muted">{{ row.count }}</span></div>
+          <div class="chart-bar-track">
+            <div class="chart-bar-fill" style="width: {{ row.pct }}%;"></div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+      <p class="muted">No answers yet.</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {% if page_obj.object_list %}
+  <div class="table-scroll">
+    <table class="responses-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Submitted</th>
+          <th>Name</th>
+          <th>Email</th>
+          {% for question in questions %}
+          <th title="{{ question.text }}">{{ question.text|truncatewords:8 }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for response, answer_list in page_obj %}
+        <tr>
+          <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
+          <td>{{ response.submitted_at|date:"M d, Y H:i" }}</td>
+          <td>{{ response.respondent_name }}</td>
+          <td>{{ response.respondent_email }}</td>
+          {% for answer_text in answer_list %}
+          <td class="answer-cell">{{ answer_text|default:"—" }}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page_obj.has_other_pages %}
+  <nav class="pagination" aria-label="Responses pages">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}" class="btn-lumen btn-ghost">Previous</a>
+    {% endif %}
+    <span class="muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}" class="btn-lumen btn-ghost">Next</a>
+    {% endif %}
+  </nav>
+  {% endif %}
+  {% else %}
+  <div class="empty-state">
+    <p class="muted">No responses yet. Share your fill link to collect answers.</p>
+  </div>
+  {% endif %}
+</article>
+{% endblock %}

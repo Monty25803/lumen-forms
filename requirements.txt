@@ -1,1 +1,8 @@
-Django>=6.0
+Django>=6.0,<7
+gunicorn>=23.0
+whitenoise>=6.9
+python-dotenv>=1.0
+django-allauth>=65.0
+google-api-python-client>=2.160
+google-auth>=2.38
+google-auth-oauthlib>=1.2

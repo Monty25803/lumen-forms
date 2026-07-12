@@ -1,0 +1,38 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block head_title %}Sign in{% endblock %} — Lumen</title>
+  <link rel="stylesheet" href="{% static 'css/lumen.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="auth-body">
+  <div class="page-bg" aria-hidden="true"></div>
+  <div class="container auth-container">
+    <header class="lumen-header auth-header">
+      <a href="{% url 'home' %}" class="brand">Lumen</a>
+      <p class="tagline">Create forms. Collect answers in your Sheet.</p>
+    </header>
+
+    {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+      <li class="message message-{{ message.tags }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <main class="auth-main">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+      <a href="{% url 'home' %}">Back to home</a>
+    </footer>
+  </div>
+  {% block extra_body %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load socialaccount %}
+
+{% block title %}Forms — {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="section hero-cta">
+  {% if user.is_authenticated %}
+  <p class="muted signed-in-line">Signed in{% if user.email %} as {{ user.email }}{% endif %}</p>
+  <div class="action-row hero-actions">
+    <a href="{% url 'form_create' %}" class="btn-lumen">Create a form</a>
+    <a href="{% url 'my_forms' %}" class="btn-lumen btn-secondary">My forms</a>
+  </div>
+  {% else %}
+  <div class="sign-in-wrap">
+    <a href="{% provider_login_url 'google' %}" class="btn-lumen btn-sign-in">Sign in</a>
+  </div>
+  {% endif %}
+</section>
+
+{% if user.is_authenticated and my_forms %}
+<section class="section">
+  <h2 class="section-title">Your forms</h2>
+  {% for form in my_forms %}
+  <article class="lumen-card">
+    <span class="status-pill status-{{ form.status }}">{{ form.get_status_display }}</span>
+    <h3 class="form-title">{{ form.title }}</h3>
+    {% if form.description %}<p class="form-description">{{ form.description }}</p>{% endif %}
+    <div class="action-row">
+      <a href="{% url 'form_manage' form.public_id %}" class="btn-lumen">Manage</a>
+      {% if form.status == 'published' %}
+      <a href="{% url 'form_detail' form.public_id %}" class="btn-lumen btn-secondary">Open fill link</a>
+      <a href="{% url 'form_responses' form.public_id %}" class="btn-lumen btn-ghost">Responses</a>
+      {% endif %}
+    </div>
+  </article>
+  {% endfor %}
+</section>
+{% endif %}
+
+<section class="section">
+  <h2 class="section-title">Published forms</h2>
+  {% if forms %}
+    {% for form in forms %}
+    <article class="lumen-card">
+      <h3 class="form-title">{{ form.title }}</h3>
+      {% if form.description %}
+      <p class="form-description">{{ form.description }}</p>
+      {% endif %}
+      <div class="action-row">
+        <a href="{% url 'form_detail' form.public_id %}" class="btn-lumen">Fill out form</a>
+        {% if user.is_staff or form.owner_id == user.id %}
+        <a href="{% url 'form_responses' form.public_id %}" class="btn-lumen btn-secondary">View responses</a>
+        {% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  {% else %}
+    <div class="lumen-card empty-state">
+      <p class="muted">No published forms yet. Create one after signing in.</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

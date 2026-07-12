@@ -1,0 +1,15 @@
+{% extends "allauth/layouts/base.html" %}
+{% load i18n %}
+{% load socialaccount %}
+
+{% block head_title %}{% trans "Sign in with Google" %}{% endblock %}
+
+{% block content %}
+<article class="lumen-card auth-card">
+  <h1 class="auth-title">Sign in</h1>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn-lumen btn-submit">Continue with Google</button>
+  </form>
+</article>
+{% endblock %}

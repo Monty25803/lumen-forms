@@ -1,0 +1,21 @@
+{% extends "allauth/layouts/base.html" %}
+{% load i18n %}
+{% load socialaccount %}
+
+{% block head_title %}{% trans "Sign in" %}{% endblock %}
+
+{% block content %}
+<article class="lumen-card auth-card">
+  <h1 class="auth-title">Sign in</h1>
+  {% get_providers as socialaccount_providers %}
+  {% if socialaccount_providers %}
+    {% for provider in socialaccount_providers %}
+      {% if provider.id == "google" %}
+      <a class="btn-lumen" href="{% provider_login_url provider.id %}">Sign in with Google</a>
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    <p class="notice">Sign-in is not available right now. Please try again later.</p>
+  {% endif %}
+</article>
+{% endblock %}

@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage — {{ form_model.title }}{% endblock %}
+
+{% block content %}
+<article class="lumen-card">
+  <div class="responses-header">
+    <div>
+      <span class="status-pill status-{{ form_model.status }}">{{ form_model.get_status_display }}</span>
+      <h2 class="form-title">{{ form_model.title }}</h2>
+    </div>
+    <div class="action-row">
+      <a href="{% url 'form_detail' form_model.public_id %}" class="btn-lumen btn-ghost">Preview</a>
+      <a href="{% url 'form_responses' form_model.public_id %}" class="btn-lumen btn-ghost">Responses</a>
+    </div>
+  </div>
+
+  {% if form_model.google_sheet_url %}
+  <p class="muted">Sheet: <a href="{{ form_model.google_sheet_url }}" target="_blank" rel="noopener">Open in Google Sheets</a></p>
+  {% else %}
+  <p class="muted">Publishing will create a Google Sheet in your Drive and send every answer there.</p>
+  {% endif %}
+  {% if not google_oauth_configured %}
+  <p class="notice">Google sign-in is not configured. Ask the site admin to reconnect Google OAuth.</p>
+  {% endif %}
+
+  <h3 class="section-title">Share</h3>
+  <div class="share-box">
+    <input class="lumen-input" id="share-url" type="text" readonly value="{{ share_url }}">
+    <button type="button" class="btn-lumen btn-secondary" id="copy-share-btn">Copy link</button>
+  </div>
+  <p class="muted embed-help">Embed code:</p>
+  <code class="share-link" id="embed-code">&lt;iframe src="{{ embed_url }}" width="100%" height="720" frameborder="0"&gt;&lt;/iframe&gt;</code>
+
+  <h3 class="section-title">Details</h3>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="save_meta">
+    {% for field in meta_form %}
+    <div class="form-question">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {% if field.help_text %}<p class="muted">{{ field.help_text }}</p>{% endif %}
+      {{ field.errors }}
+      {{ field }}
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn-lumen btn-secondary">Save details</button>
+  </form>
+</article>
+
+<article class="lumen-card">
+  <h3 class="section-title">Questions</h3>
+  {% for question in questions %}
+  <div class="question-block">
+    <div class="responses-header">
+      <div>
+        <strong>{{ question.text }}</strong>
+        <p class="muted">{{ question.get_question_type_display }}{% if question.required %} · required{% endif %}</p>
+        {% if question.options.all %}
+        <p class="muted">Options: {% for opt in question.options.all %}{{ opt.text }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+        {% endif %}
+      </div>
+      <div class="action-row">
+        <a href="{% url 'question_edit' form_model.public_id question.id %}" class="btn-lumen btn-ghost">Edit</a>
+        <form method="post" action="{% url 'question_delete' form_model.public_id question.id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn-lumen btn-ghost">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="empty-state">
+    <p class="muted">No questions yet. Add your first question below.</p>
+  </div>
+  {% endfor %}
+
+  <h3 class="section-title">Add question</h3>
+  <form method="post" id="add-question-form">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="add_question">
+    <div class="form-question">
+      <label for="{{ question_form.text.id_for_label }}">{{ question_form.text.label }}</label>
+      {% if question_form.text.errors %}<ul class="errorlist">{% for error in question_form.text.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+      {{ question_form.text }}
+    </div>
+    <div class="form-question">
+      <label for="{{ question_form.question_type.id_for_label }}">{{ question_form.question_type.label }}</label>
+      {% if question_form.question_type.errors %}<ul class="errorlist">{% for error in question_form.question_type.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+      {{ question_form.question_type }}
+    </div>
+    <div class="form-question">
+      <label class="checkbox-inline">{{ question_form.required }} <span>Required</span></label>
+    </div>
+    <div class="form-question options-builder" id="options-builder" hidden>
+      <label>Options</label>
+      <p class="muted">Each choice gets its own field. Add as many as you need.</p>
+      {% if question_form.non_field_errors %}
+      <ul class="errorlist">{% for error in question_form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>
+      {% endif %}
+      <div id="options-list" class="options-list">
+        {% for value in question_form.option_values %}
+        <div class="option-row">
+          <input type="text" name="options" class="lumen-input" value="{{ value }}" placeholder="Option {{ forloop.counter }}" autocomplete="off">
+          <button type="button" class="btn-lumen btn-ghost btn-remove-option">Remove</button>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="button" class="btn-lumen btn-secondary" id="add-option-btn">Add option</button>
+    </div>
+    <button type="submit" class="btn-lumen">Add question</button>
+  </form>
+</article>
+
+<article class="lumen-card">
+  <h3 class="section-title">Publish & lifecycle</h3>
+  <div class="action-row">
+    {% if form_model.status != 'published' %}
+    <form method="post" action="{% url 'form_publish' form_model.public_id %}">
+      {% csrf_token %}
+      <button type="submit" class="btn-lumen btn-submit">Publish + link Google Sheet</button>
+    </form>
+    {% else %}
+    <form method="post" action="{% url 'form_close' form_model.public_id %}">
+      {% csrf_token %}
+      <button type="submit" class="btn-lumen btn-secondary">Close form</button>
+    </form>
+    {% endif %}
+    <form method="post" action="{% url 'form_duplicate' form_model.public_id %}">
+      {% csrf_token %}
+      <button type="submit" class="btn-lumen btn-ghost">Duplicate</button>
+    </form>
+    <form method="post" action="{% url 'form_archive' form_model.public_id %}">
+      {% csrf_token %}
+      <button type="submit" class="btn-lumen btn-ghost">Archive</button>
+    </form>
+    <form method="post" action="{% url 'form_delete' form_model.public_id %}" onsubmit="return confirm('Delete this form permanently?');">
+      {% csrf_token %}
+      <button type="submit" class="btn-lumen btn-ghost">Delete</button>
+    </form>
+  </div>
+  {% if pending_sync %}
+  <p class="notice">{{ pending_sync }} response(s) waiting to sync to Sheets. Open Responses to retry.</p>
+  {% endif %}
+</article>
+
+<template id="option-row-template">
+  <div class="option-row">
+    <input type="text" name="options" class="lumen-input" value="" placeholder="Option" autocomplete="off">
+    <button type="button" class="btn-lumen btn-ghost btn-remove-option">Remove</button>
+  </div>
+</template>
+<script src="{% static 'js/options-builder.js' %}"></script>
+<script>
+(function () {
+  const btn = document.getElementById('copy-share-btn');
+  const input = document.getElementById('share-url');
+  if (!btn || !input) return;
+  btn.addEventListener('click', async function () {
+    try {
+      await navigator.clipboard.writeText(input.value);
+      btn.textContent = 'Copied';
+      setTimeout(() => { btn.textContent = 'Copy link'; }, 1500);
+    } catch (err) {
+      input.select();
+      document.execCommand('copy');
+      btn.textContent = 'Copied';
+      setTimeout(() => { btn.textContent = 'Copy link'; }, 1500);
+    }
+  });
+})();
+</script>
+{% endblock %}

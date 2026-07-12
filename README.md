@@ -1,71 +1,84 @@
-# Neon's Form
+# Lumen
 
-A lightweight Google Forms–like application built with Django. Create forms, collect responses, and view results with a neon-themed UI.
+Sign in with Google, create your own forms, share a link, and collect answers directly into a Google Sheet.
 
 ## Features
 
-- **Create forms** via Django admin with multiple question types:
-  - Short text
-  - Long text (paragraph)
-  - Single choice (radio)
-  - Multiple choice (checkbox)
-  - Dropdown
-- **Fill out forms** with a clean, neon-styled interface
-- **View responses** in a staff-only table view
-- **No authentication required** for form submission (ideal for surveys and feedback)
+- Google Sign-in for creators (Sheets + Drive file access)
+- In-app builder with starter templates (feedback, RSVP, pulse)
+- Multi-field options for choice questions; edit / delete questions
+- Share link copy, embed iframe, duplicate / archive / delete forms
+- Optional close-at datetime
+- Respondent name + email on every submission
+- Google Sheets sync with retry for failed rows
+- Owner email notification on new responses (console email in dev)
+- Responses table, CSV export, and choice charts
+- Draft / published / closed / archived lifecycle
 
 ## Requirements
 
 - Python 3.10+ (3.12+ recommended)
 - Django 6.x
+- Google Cloud OAuth client + Sheets API + Drive API
 
 ## Setup
 
-1. Create a virtual environment (recommended):
-   ```bash
-   py -3 -m venv venv
-   venv\Scripts\activate   # Windows
-   ```
-
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. Run migrations:
-   ```bash
-   py -3 manage.py migrate
-   ```
-
-4. Create a superuser for the admin:
-   ```bash
-   py -3 manage.py createsuperuser
-   ```
-
-5. Start the development server:
-   ```bash
-   py -3 manage.py runserver
-   ```
-
-6. Open http://127.0.0.1:8000/ in your browser.
-
-## Usage
-
-1. Go to http://127.0.0.1:8000/admin/ and log in.
-2. Create a **Form** with a title and optional description.
-3. Add **Questions** to the form (with **Options** for radio/checkbox/dropdown types).
-4. Visit the home page to see your forms and share links for others to fill out.
-5. Log in as a staff user to use **View responses** and see submitted answers.
-
-## Project Structure
-
+```bash
+py -3 -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env
+py -3 manage.py migrate
+py -3 manage.py runserver
 ```
-Neon_Form/
-├── neon_form/          # Project settings
-├── forms_app/          # Main forms application
-├── templates/          # HTML templates
-├── static/css/         # Neon-themed styles
-├── manage.py
-└── requirements.txt
+
+Open http://127.0.0.1:8000/
+
+### Google Cloud
+
+1. Enable **Google Sheets API** and **Google Drive API**
+2. OAuth consent screen → add yourself as a **Test user** while in Testing
+3. OAuth client (Web) redirect URI:
+
+```text
+http://127.0.0.1:8000/accounts/google/login/callback/
 ```
-# Neon_Form
+
+4. Put `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env`
+
+### Retry failed Sheet syncs
+
+From Responses UI, or:
+
+```bash
+py -3 manage.py retry_sheet_sync
+```
+
+## Production / Postgres
+
+Set at least:
+
+```env
+DJANGO_DEBUG=false
+DJANGO_SECRET_KEY=long-random-value
+DJANGO_ALLOWED_HOSTS=your.domain
+```
+
+For Postgres, replace the SQLite `DATABASES` block in `lumen/settings.py` with something like:
+
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ['POSTGRES_DB'],
+        'USER': os.environ['POSTGRES_USER'],
+        'PASSWORD': os.environ['POSTGRES_PASSWORD'],
+        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
+        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
+    }
+}
+```
+
+Then install `psycopg[binary]`, run `collectstatic`, and serve with gunicorn + HTTPS.
+
+For real email notifications, set SMTP vars (`EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL`) and `EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend`.
