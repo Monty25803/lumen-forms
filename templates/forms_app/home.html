@@ -13,7 +13,9 @@
     <p class="form-description">{{ form.description }}</p>
     {% endif %}
     <a href="{% url 'form_detail' form.id %}" class="btn-neon">Fill out form</a>
+    {% if request.user.is_staff %}
     <a href="{% url 'form_responses' form.id %}" class="btn-neon" style="margin-left: 0.5rem; border-color: var(--neon-magenta); color: var(--neon-magenta);">View responses</a>
+    {% endif %}
   </div>
   {% endfor %}
 {% else %}

@@ -1,8 +1,8 @@
 """
 Neon's Form - Views for form listing, creation, and response
 """
+from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
 from .models import Form, Question, Option, Response, Answer
 from .forms import build_form_from_model
 
@@ -55,6 +55,7 @@ def form_thanks(request, form_id):
     return render(request, 'forms_app/form_thanks.html', {'form_model': form_model})
 
 
+@staff_member_required(login_url='admin:login')
 def form_responses(request, form_id):
     """View responses for a form (simple admin view)."""
     form_model = get_object_or_404(Form, id=form_id)
