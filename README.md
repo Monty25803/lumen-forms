@@ -1,4 +1,4 @@
-# Lumen
+# Lumen Forms
 
 Sign in with Google, create your own forms, share a link, and collect answers directly into a Google Sheet.
 
